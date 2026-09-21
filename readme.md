@@ -203,7 +203,7 @@ Homebrew's built-in npm livecheck strategy recognizes registry tarball URLs, so 
 
 #### Description rules
 
-Homebrew's `brew audit` rejects descriptions that start with an article or the formula name, end with a period, spell "command-line" differently, contain emoji, or exceed 80 characters. Brewpub fixes the first few automatically and warns about length, which `--description` can override.
+Homebrew's `brew audit` rejects descriptions that start with an article or the formula name, end with a period, spell "command-line" differently, contain emoji, or exceed 80 characters. Brewpub fixes the first few automatically, drops leading boilerplate like "CLI tool to" or "CLI tool and TypeScript library for", keeps only the first sentence, and warns about length, which `--description` can override.
 
 #### Dependency cooldown
 

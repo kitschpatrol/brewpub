@@ -33,6 +33,45 @@ describe('normalizeDescription', () => {
 		expect(normalizeDescription(input, { formulaName }).description).toBe(expected)
 	})
 
+	it.each([
+		[
+			'CLI tool to publish and update Homebrew formula to your custom tap. Like npm publish for Homebrew.',
+			'Publish and update Homebrew formula to your custom tap',
+		],
+		[
+			'CLI tool and TypeScript library implementing the Markdown Autophagic Template (MDAT) system. MDAT lets you use comments as dynamic content templates in Markdown files, making it easy to generate and update readme boilerplate.',
+			'Markdown Autophagic Template (MDAT) system',
+		],
+		['A CLI tool for managing things', 'Managing things'],
+		['A CLI tool and library for parsing things', 'Parsing things'],
+		['Library tool to do things', 'Do things'],
+		['CLI tool for the command line', 'Command-line'],
+		['CLI tools for many things', 'CLI tools for many things'],
+		['Toolkit for things', 'Toolkit for things'],
+		['CLI tool', 'CLI tool'],
+		['CLI tool format converter', 'CLI tool format converter'],
+	])('strips tool boilerplate from %j', (input, expected) => {
+		expect(normalizeDescription(input).description).toBe(expected)
+	})
+
+	it.each([
+		['First sentence. Second sentence.', 'First sentence'],
+		['Works with Node.js apps. Really well', 'Works with Node.js apps'],
+		['Handles e.g. foo and bar', 'Handles e.g. foo and bar'],
+		['Supports foo, bar, etc. Also baz', 'Supports foo, bar, etc.'],
+		['Version 1.2 tool. Really', 'Version 1.2 tool'],
+		['No sentence break here', 'No sentence break here'],
+		['Ends with a period.', 'Ends with a period'],
+	])('keeps only the first sentence of %j', (input, expected) => {
+		expect(normalizeDescription(input).description).toBe(expected)
+	})
+
+	it('does not warn about length when the first sentence fits', () => {
+		const result = normalizeDescription(`${'A'.repeat(70)}. ${'B'.repeat(70)}`)
+		expect(result.description).toBe('A'.repeat(70))
+		expect(result.warnings).toEqual([])
+	})
+
 	it('throws when nothing is left', () => {
 		expect(() => normalizeDescription('')).toThrow(NO_DESCRIPTION)
 		expect(() => normalizeDescription('foo', { formulaName: 'foo' })).toThrow(NO_DESCRIPTION)

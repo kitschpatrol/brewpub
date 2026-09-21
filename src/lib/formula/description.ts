@@ -1,10 +1,18 @@
 // Mirrors the checks in Homebrew's `Library/Homebrew/rubocops/shared/desc_helper.rb` so that
 // generated formulae pass `brew audit` without manual edits.
 
+import { log } from '../log'
+
 const MAX_DESCRIPTION_LENGTH = 80
 const LOWERCASE_ALLOWED_FIRST_WORDS = new Set(['iOS', 'iPhone', 'macOS'])
 const LEADING_ARTICLE = /^(?:the|an?)\s+/iv
+// Boilerplate like "CLI tool to …" or "CLI tool and TypeScript library implementing the …"
+// that npm descriptions tend to open with, but that wastes Homebrew's 80 characters.
+const LEADING_TOOL_PHRASE =
+	/^(?:a )?(?:cli|library) tool(?: and (?:typescript )?library)? (?:to|for|implementing(?: the)?)\b\s*/iv
 const COMMAND_LINE = /command ?line/giv
+// A period followed by whitespace and a capital letter, so "Node.js" and "e.g. foo" don't count.
+const SENTENCE_BREAK = /\.\s+(?=[A-Z])/v
 const TRAILING_FULL_STOP = /\.$/v
 const STARTS_LOWERCASE = /^[a-z]/v
 const SYMBOLS = /\s?\p{So}/gv
@@ -28,8 +36,9 @@ function getLeadingNameRegex(formulaName: string): RegExp {
 
 /**
  * Normalize an npm package description into something Homebrew's `desc` audit
- * accepts: no leading article, no leading formula name, capitalized, spelled
- * `command-line`, no trailing full stop, no emoji.
+ * accepts: no leading article, no leading formula name, no leading "CLI tool to
+ * …" boilerplate, first sentence only, capitalized, spelled `command-line`, no
+ * trailing full stop, no emoji.
  *
  * Over-long descriptions are returned as-is with a warning, since truncation
  * would be lossy.
@@ -49,8 +58,15 @@ export function normalizeDescription(
 	}
 
 	description = description
+		.replace(LEADING_TOOL_PHRASE, '')
 		.replace(LEADING_ARTICLE, '')
 		.replaceAll(COMMAND_LINE, (match) => (match.startsWith('C') ? 'Command-line' : 'command-line'))
+
+	const sentenceBreakIndex = description.search(SENTENCE_BREAK)
+	if (sentenceBreakIndex !== -1) {
+		log.debug(`Keeping only the first sentence of the description: "${description}"`)
+		description = description.slice(0, sentenceBreakIndex + 1)
+	}
 
 	if (!description.endsWith('etc.')) {
 		description = description.replace(TRAILING_FULL_STOP, '')
