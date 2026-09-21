@@ -1,0 +1,17 @@
+publicHoistPattern:
+  - '@kitschpatrol/repo-config'
+  - '@kitschpatrol/typescript-config'
+  - 'case-police'
+  - '*cspell*'
+  - '*eslint*'
+  - '*knip*'
+  - '*mdat*'
+  - '*prettier*'
+  - '*remark*'
+  - '*stylelint*'
+allowBuilds:
+  oxc-resolver: true
+  unrs-resolver: true
+minimumReleaseAgeExclude:
+  - '@kitschpatrol/*'
+  - yargs@18.2.0
