@@ -16,3 +16,4 @@ allowBuilds:
 minimumReleaseAgeExclude:
   - '@kitschpatrol/*'
   - yargs@18.2.0
+  - lognow@0.8.4
