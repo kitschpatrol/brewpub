@@ -1,14 +1,14 @@
-import type { Options, PositionalOptions } from 'yargs'
+import type { Options } from 'yargs'
 import { DEFAULT_PUBLISH_FORMULA_OPTIONS } from '../lib'
 
-export const packagePositional = [
-	'package',
-	{
+export const cwdOption = {
+	cwd: {
+		default: DEFAULT_PUBLISH_FORMULA_OPTIONS.cwd,
 		describe:
 			'Directory of the npm package to publish as a formula. Defaults to the current directory.',
 		type: 'string',
 	},
-] as const satisfies [string, PositionalOptions]
+} as const satisfies Record<string, Options>
 
 export const tapOption = {
 	tap: {

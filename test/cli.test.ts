@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest'
 const cliPath = path.resolve(import.meta.dirname, '../dist/bin/cli.js')
 const noPackageDirectory = path.resolve(import.meta.dirname, 'fixtures/projects/no-package')
 const SEMVER = /\d+\.\d+\.\d+/v
+const WHITESPACE = /\s+/gv
 
 type RunResult = { code: number; stderr: string; stdout: string }
 
@@ -50,6 +51,7 @@ describe('cli', () => {
 		expect(code).toBe(0)
 		for (const option of [
 			'--tap',
+			'--cwd',
 			'--path',
 			'--name',
 			'--description',
@@ -94,5 +96,25 @@ describe('cli', () => {
 		expect(code).toBe(1)
 		expect(stderr).not.toContain('Missing required argument')
 		expect(stderr).toContain('No package.json found')
+	})
+
+	it('accepts the package directory as --cwd or BREWPUB_CWD', async () => {
+		const flagRun = await run(['--tap', 'example/tap', '--dry-run', '--cwd', noPackageDirectory], {
+			cwd: import.meta.dirname,
+			env: { GITHUB_TOKEN: 'x' },
+		})
+		expect(flagRun.code).toBe(1)
+		expect(flagRun.stderr.replaceAll(WHITESPACE, ' ')).toContain(
+			`No package.json found in ${noPackageDirectory}`,
+		)
+
+		const envRun = await run(['--tap', 'example/tap', '--dry-run'], {
+			cwd: import.meta.dirname,
+			env: { BREWPUB_CWD: noPackageDirectory, GITHUB_TOKEN: 'x' },
+		})
+		expect(envRun.code).toBe(1)
+		expect(envRun.stderr.replaceAll(WHITESPACE, ' ')).toContain(
+			`No package.json found in ${noPackageDirectory}`,
+		)
 	})
 })

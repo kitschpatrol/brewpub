@@ -90,17 +90,14 @@ Create or update a Homebrew formula for a published npm package in a GitHub-host
 Usage:
 
 ```txt
-brewpub [package]
+brewpub
 ```
-
-| Positional Argument | Description                                                                              | Type     |
-| ------------------- | ---------------------------------------------------------------------------------------- | -------- |
-| `package`           | Directory of the npm package to publish as a formula. Defaults to the current directory. | `string` |
 
 | Option              | Description                                                                                                                                                      | Type      | Default                        |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ------------------------------ |
 | `--verbose`         | Enable verbose logging.                                                                                                                                          | `boolean` | `false`                        |
 | `--tap`             | GitHub repository of the Homebrew tap, as "owner/name" or "owner/homebrew-name". For example, "kitschpatrol/tap".                                                | `string`  |                                |
+| `--cwd`             | Directory of the npm package to publish as a formula. Defaults to the current directory.                                                                         | `string`  | `"."`                          |
 | `--path`            | Directory inside the tap where new formulae are written, for example "Formula/custom". Existing formulae are updated wherever they already live under "Formula". | `string`  | `"Formula"`                    |
 | `--name`            | Formula name. Defaults to the package name without its scope.                                                                                                    | `string`  |                                |
 | `--description`     | Formula description. Defaults to the package description, adjusted to satisfy `brew audit`.                                                                      | `string`  |                                |

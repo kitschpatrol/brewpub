@@ -7,12 +7,12 @@ import { bin, name as packageName, version } from '../../package.json' with { ty
 import { formatPublishFormulaResult, publishFormula, setLogger } from '../lib'
 import {
 	branchOption,
+	cwdOption,
 	descriptionOption,
 	dryRunOption,
 	forceOption,
 	jsonOption,
 	nameOption,
-	packagePositional,
 	pathOption,
 	prOption,
 	registryOption,
@@ -46,12 +46,12 @@ try {
 			setLogger(log)
 		})
 		.command(
-			'$0 [package]',
+			'$0',
 			'Create or update a Homebrew formula for a published npm package in a GitHub-hosted tap. Run it after `npm publish`.',
 			(commandYargs) =>
 				commandYargs
-					.positional(...packagePositional)
 					.option(tapOption)
+					.option(cwdOption)
 					.option(pathOption)
 					.option(nameOption)
 					.option(descriptionOption)
@@ -65,12 +65,12 @@ try {
 					.option(timeoutOption),
 			async ({
 				branch,
+				cwd,
 				description,
 				dryRun,
 				force,
 				json,
 				name,
-				package: packagePath,
 				path,
 				pr,
 				registry,
@@ -81,7 +81,7 @@ try {
 			}) => {
 				const result = await publishFormula({
 					branch,
-					cwd: packagePath,
+					cwd,
 					description,
 					dryRun,
 					force,
