@@ -1,6 +1,8 @@
 export type { NormalizeDescriptionResult } from './formula/description'
 export { normalizeDescription } from './formula/description'
 export { getFormulaClassName, getFormulaName, isValidFormulaName } from './formula/name'
+export type { PlatformRequirements } from './formula/platform'
+export { getPlatformRequirements } from './formula/platform'
 export type { RenderFormulaInput } from './formula/render'
 export { renderFormula } from './formula/render'
 export type { UpdateFormulaResult } from './formula/update'

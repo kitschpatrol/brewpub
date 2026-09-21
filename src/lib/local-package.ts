@@ -7,15 +7,25 @@ import { normalizeRepoUrl } from './utilities/repo-url'
  * registry.
  */
 export type LocalPackageInfo = {
+	/** The package.json `cpu` field, e.g. `["arm64"]`. Empty when unconstrained. */
+	cpu: string[]
 	/** `homepage` from package.json, if any. */
 	homepage: string | undefined
 	name: string
+	/** The package.json `os` field, e.g. `["darwin"]`. Empty when unconstrained. */
+	os: string[]
 	/**
 	 * Repository URL from package.json or the git `origin` remote, normalized to
 	 * `https`.
 	 */
 	repoUrl: string | undefined
 	version: string
+}
+
+function getStringArray(value: unknown): string[] {
+	return Array.isArray(value)
+		? value.filter((entry): entry is string => typeof entry === 'string')
+		: []
 }
 
 const template = defineTemplate((context) => ({
@@ -52,7 +62,7 @@ export async function getLocalPackageInfo(
 		)
 	}
 
-	const { homepage, name, repository, version } = packageJson
+	const { cpu, homepage, name, os, repository, version } = packageJson
 	if (typeof name !== 'string' || name === '' || typeof version !== 'string' || version === '') {
 		throw new Error(`The package.json in ${absolutePath} needs both a "name" and a "version".`)
 	}
@@ -61,8 +71,10 @@ export async function getLocalPackageInfo(
 	const repoUrl = typeof repoCandidate === 'string' ? normalizeRepoUrl(repoCandidate) : undefined
 
 	return {
+		cpu: getStringArray(cpu),
 		homepage: typeof homepage === 'string' && homepage !== '' ? homepage : undefined,
 		name,
+		os: getStringArray(os),
 		repoUrl,
 		version,
 	}

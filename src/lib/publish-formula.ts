@@ -1,11 +1,13 @@
 import type { Octokit } from '@octokit/core'
 import { defu } from 'defu'
 import semver from 'semver'
+import type { PlatformRequirements } from './formula/platform'
 import type { TapFile, TapReference } from './github/tap'
 import type { LocalPackageInfo } from './local-package'
 import type { PackageRelease } from './registry'
 import { normalizeDescription } from './formula/description'
 import { getFormulaClassName, getFormulaName, isValidFormulaName } from './formula/name'
+import { getPlatformRequirements } from './formula/platform'
 import { renderFormula } from './formula/render'
 import { updateFormula } from './formula/update'
 import { createGitHubClient, resolveGitHubToken } from './github/client'
@@ -133,11 +135,13 @@ type ResolvedOptions = Omit<PublishFormulaOptions, keyof PublishFormulaDefaults>
 	PublishFormulaDefaults
 
 type FormulaInputs = {
+	arch: PlatformRequirements['arch']
 	binName: string
 	description: string
 	formulaName: string
 	homepage: string
 	license: string | undefined
+	os: PlatformRequirements['os']
 	warnings: string[]
 }
 
@@ -196,7 +200,19 @@ function getFormulaInputs(
 		}
 	}
 
-	return { binName, description: normalized.description, formulaName, homepage, license, warnings }
+	const platform = getPlatformRequirements({ cpu: local.cpu, os: local.os })
+	warnings.push(...platform.warnings)
+
+	return {
+		arch: platform.arch,
+		binName,
+		description: normalized.description,
+		formulaName,
+		homepage,
+		license,
+		os: platform.os,
+		warnings,
+	}
 }
 
 function isNewerThan(previousVersion: string | undefined, version: string): boolean {
@@ -226,11 +242,13 @@ async function planFormula(
 	const existingPath = existingPaths[0]
 	if (existingPath === undefined) {
 		const content = renderFormula({
+			arch: inputs.arch,
 			binName: inputs.binName,
 			description: inputs.description,
 			formulaName: inputs.formulaName,
 			homepage: inputs.homepage,
 			license: inputs.license,
+			os: inputs.os,
 			sha256: release.sha256,
 			url: release.tarballUrl,
 		})

@@ -259,6 +259,20 @@ describe('publishFormula', () => {
 		await expect(publishFormula({ ...baseOptions, cwd })).rejects.toThrow(NO_HOMEPAGE)
 	})
 
+	it('translates os and cpu constraints into depends_on stanzas', async () => {
+		const cwd = await createProject({
+			cpu: ['arm64'],
+			name: 'mac-arm',
+			os: ['darwin'],
+			version: '1.0.0',
+		})
+		const result = await publishFormula({ ...baseOptions, cwd })
+		expect(result.formula.content).toContain(
+			'  depends_on arch: :arm64\n  depends_on :macos\n  depends_on "node"\n',
+		)
+		expect(result.warnings).toEqual([])
+	})
+
 	it('rejects an invalid tap before doing any work', async () => {
 		await expect(publishFormula({ ...baseOptions, tap: 'nope' })).rejects.toThrow(INVALID_TAP)
 	})

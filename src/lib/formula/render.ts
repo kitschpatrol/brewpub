@@ -4,6 +4,8 @@ import { getFormulaClassName } from './name'
  * Everything needed to render a new Node formula.
  */
 export type RenderFormulaInput = {
+	/** Restrict the formula to one CPU architecture with `depends_on arch:`. */
+	arch?: 'arm64' | 'x86_64' | undefined
 	/** Name of the executable used by the formula's test block. */
 	binName: string
 	/** Formula description, already normalized for Homebrew's audit rules. */
@@ -13,6 +15,8 @@ export type RenderFormulaInput = {
 	homepage: string
 	/** SPDX license identifier. Omitted from the formula when undefined. */
 	license?: string | undefined
+	/** Restrict the formula to one OS with `depends_on :macos` or `:linux`. */
+	os?: 'linux' | 'macos' | undefined
 	/** Hex SHA-256 of the tarball. */
 	sha256: string
 	/** Registry tarball URL. */
@@ -50,6 +54,9 @@ export function renderFormula(input: RenderFormulaInput): string {
 		`  sha256 ${toRubyString(input.sha256)}`,
 		...(input.license === undefined ? [] : [`  license ${toRubyString(input.license)}`]),
 		'',
+		// Homebrew's dependency-order cop wants platform constraints before formula dependencies.
+		...(input.arch === undefined ? [] : [`  depends_on arch: :${input.arch}`]),
+		...(input.os === undefined ? [] : [`  depends_on :${input.os}`]),
 		'  depends_on "node"',
 		'',
 		'  def install',

@@ -48,6 +48,17 @@ describe('renderFormula', () => {
 		)
 	})
 
+	it('adds platform constraints before the node dependency', () => {
+		const formula = renderFormula({ ...baseInput, arch: 'arm64', os: 'macos' })
+		expect(formula).toContain(
+			'  depends_on arch: :arm64\n  depends_on :macos\n  depends_on "node"\n\n  def install',
+		)
+
+		const linuxOnly = renderFormula({ ...baseInput, os: 'linux' })
+		expect(linuxOnly).toContain('  depends_on :linux\n  depends_on "node"\n\n  def install')
+		expect(linuxOnly).not.toContain('arch:')
+	})
+
 	it('ends with a single trailing newline', () => {
 		const formula = renderFormula(baseInput)
 		expect(formula.endsWith('end\n')).toBe(true)

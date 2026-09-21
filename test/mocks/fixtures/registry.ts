@@ -143,6 +143,15 @@ const bare = createRegistryFixture({
 	version: '1.0.0',
 })
 
+const macArm = createRegistryFixture({
+	bin: { 'mac-arm': 'cli.js' },
+	description: 'Apple Silicon only',
+	homepage: 'https://example.com/mac-arm',
+	license: 'MIT',
+	name: 'mac-arm',
+	version: '1.0.0',
+})
+
 const noIntegrity = createRegistryFixture({
 	bin: { 'no-integrity': 'cli.js' },
 	description: 'No checks at all',
@@ -165,6 +174,7 @@ for (const fixture of [
 	shasumOnly,
 	noIntegrity,
 	bare,
+	macArm,
 ]) {
 	registryFixtures[`${String(fixture.manifest.name)}@${String(fixture.manifest.version)}`] = fixture
 }

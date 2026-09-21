@@ -197,6 +197,10 @@ Publishing a CLI to npm is one command. Making it installable with `brew install
 
 When a formula already exists, only its top-level `url` and `sha256` lines change. Everything else, including `bottle` blocks added by `brew pr-pull`, `livecheck` blocks, extra dependencies, and hand-written tests, is left alone. This mirrors what `brew bump-formula-pr` does.
 
+#### Platform constraints
+
+The `os` and `cpu` fields of the local `package.json` become `depends_on` stanzas: `["darwin"]` gives `depends_on :macos`, `["linux"]` gives `depends_on :linux`, and `["arm64"]` or `["x64"]` give `depends_on arch: :arm64` or `:x86_64`. Lists that allow both of Homebrew's platforms, and exclusions like `["!win32"]` that don't narrow them, produce no stanza. This only applies when a formula is created; updates leave existing `depends_on` lines alone.
+
 #### Livecheck for free
 
 Homebrew's built-in npm livecheck strategy recognizes registry tarball URLs, so formulae created by brewpub work with `brew livecheck` and `brew bump` without a `livecheck` block.
