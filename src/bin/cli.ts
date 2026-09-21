@@ -1,54 +1,120 @@
 #!/usr/bin/env node
 
-import { log, setDefaultLogOptions } from 'lognow'
+import { createLogger } from 'lognow'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import { bin, version } from '../../package.json' with { type: 'json' }
-import { doSomething, doSomethingElse, setLogger } from '../lib'
+import { bin, name as packageName, version } from '../../package.json' with { type: 'json' }
+import { formatPublishFormulaResult, publishFormula, setLogger } from '../lib'
+import {
+	branchOption,
+	descriptionOption,
+	dryRunOption,
+	forceOption,
+	jsonOption,
+	nameOption,
+	packagePositional,
+	pathOption,
+	prOption,
+	registryOption,
+	tapOption,
+	timeoutOption,
+	tokenOption,
+	verboseOption,
+} from './options'
 
+function createCliLogger(isVerbose: boolean) {
+	return createLogger({
+		logToConsole: { showLevel: false, showName: false, showTime: false },
+		name: packageName,
+		verbose: isVerbose,
+	})
+}
+
+let log = createCliLogger(false)
 setLogger(log)
 
 const cliCommandName = Object.keys(bin).at(0)!
 const yargsInstance = yargs(hideBin(process.argv))
 
-await yargsInstance
-	.scriptName(cliCommandName)
-	.usage('$0 [command]', `Run a ${cliCommandName} command.`)
-	.option('verbose', {
-		default: false,
-		description: 'Run with verbose logging',
-		type: 'boolean',
-	})
-	.middleware((argv) => {
-		// Set log level globally based on verbose flag
-		setDefaultLogOptions({ verbose: argv.verbose })
-	})
-	.command(
-		['$0', 'do-something'],
-		'Run the do-something command.',
-		() => {
-			// Options go here
-		},
-		() => {
-			log.debug('Running command...')
-			process.stdout.write(doSomething() + '\n')
-		},
-	)
-	.command(
-		'do-something-else',
-		'Run the do-something-else command.',
-		() => {
-			// Options go here
-		},
-		() => {
-			log.debug('Running command...')
-			process.stdout.write(doSomethingElse() + '\n')
-		},
-	)
-	.alias('h', 'help')
-	.version(version)
-	.alias('v', 'version')
-	.help()
-	.strict()
-	.wrap(process.stdout.isTTY ? Math.min(120, yargsInstance.terminalWidth()) : 0)
-	.parse()
+try {
+	await yargsInstance
+		.scriptName(cliCommandName)
+		.env('BREWPUB')
+		.option(verboseOption)
+		.middleware((argv) => {
+			log = createCliLogger(argv.verbose)
+			setLogger(log)
+		})
+		.command(
+			'$0 [package]',
+			'Create or update a Homebrew formula for a published npm package in a GitHub-hosted tap. Run it after `npm publish`.',
+			(commandYargs) =>
+				commandYargs
+					.positional(...packagePositional)
+					.option(tapOption)
+					.option(pathOption)
+					.option(nameOption)
+					.option(descriptionOption)
+					.option(tokenOption)
+					.option(prOption)
+					.option(branchOption)
+					.option(forceOption)
+					.option(dryRunOption)
+					.option(jsonOption)
+					.option(registryOption)
+					.option(timeoutOption),
+			async ({
+				branch,
+				description,
+				dryRun,
+				force,
+				json,
+				name,
+				package: packagePath,
+				path,
+				pr,
+				registry,
+				tap,
+				timeout,
+				token,
+				verbose,
+			}) => {
+				const result = await publishFormula({
+					branch,
+					cwd: packagePath,
+					description,
+					dryRun,
+					force,
+					name,
+					path,
+					pr,
+					registryUrl: registry,
+					tap,
+					timeoutMs: timeout * 1000,
+					token,
+				})
+
+				if (json) {
+					process.stdout.write(JSON.stringify(result, undefined, 2) + '\n')
+					return
+				}
+
+				if (dryRun) {
+					process.stdout.write(result.formula.content)
+				}
+
+				process.stderr.write(formatPublishFormulaResult(result, verbose) + '\n')
+			},
+		)
+		.alias('h', 'help')
+		.version(version)
+		.alias('v', 'version')
+		.help()
+		.strict()
+		.wrap(process.stdout.isTTY ? Math.min(120, yargsInstance.terminalWidth()) : 0)
+		.fail(false)
+		.parse()
+} catch (error) {
+	log.error(error instanceof Error ? error.message : String(error))
+	process.exitCode = 1
+}

@@ -14,115 +14,210 @@
 
 <!-- short-description -->
 
-**A cli+library project.**
+**CLI tool to publish and update Homebrew formula to your custom tap. Like npm publish for Homebrew.**
 
 <!-- /short-description -->
 
 ## Overview
 
+Brewpub mirrors a published npm CLI package into a [Homebrew](https://brew.sh) tap that you own. Run it right after `npm publish` (or `pnpm publish`) from your project directory, point it at your tap, and it will:
+
+1. Read the package name and version from your local `package.json`, using [metascope](https://github.com/kitschpatrol/metascope) in offline mode.
+2. Wait for the npm registry to serve that exact version, download the tarball, verify it against the registry's integrity data, and compute the SHA-256 that Homebrew needs.
+3. Create a formula in the shape of `brew create --node`, or update the existing formula's `url` and `sha256` lines in place.
+4. Commit the change straight to your tap on GitHub, or open a pull request with `--pr`.
+
+It works entirely through the GitHub API, so it needs no local clone of your tap, no `git`, and no `brew`. It runs the same way on your machine and in CI.
+
 ## Getting started
 
 ### Dependencies
 
+- Node 24 or newer.
+- A GitHub token with write access to the tap repository. Brewpub looks for `--token`, then the `BREWPUB_TOKEN` and `GITHUB_TOKEN` environment variables, then `gh auth token` if the [GitHub CLI](https://cli.github.com) is installed and signed in.
+- A GitHub-hosted tap repository, conventionally named `homebrew-<name>`. Create one with `brew tap-new <owner>/<name>` if you don't have one yet.
+
 ### Installation
+
+Run it without installing anything:
+
+```sh
+npx brewpub --tap kitschpatrol/tap
+```
+
+Or add it to a project so it can run as part of your release script:
+
+```sh
+pnpm add -D brewpub
+```
 
 ## Usage
 
 ### Library
 
+The library exposes the same operation as the CLI plus the building blocks it's made from, so you can compose them in your own release tooling.
+
 #### API
+
+- `publishFormula(options)` runs the whole flow and returns a `PublishFormulaResult` describing what happened: the action taken (`created`, `updated`, or `unchanged`), the formula source, the resolved package release, and the commit or pull request that was created.
+- `getPackageRelease(name, version, options)` polls the registry for a version, downloads and verifies the tarball, and returns its URL and SHA-256.
+- `renderFormula(input)` renders a new Node formula.
+- `updateFormula(existingRuby, { url, sha256 })` replaces only the top-level `url` and `sha256` stanzas of an existing formula.
+- `normalizeDescription(text, options)` rewrites a package description so it passes Homebrew's `desc` audit rules.
+- `getFormulaName(packageName)`, `getFormulaClassName(formulaName)`, `parseTapName(tap)`, `normalizeRepoUrl(url)`, and `resolveGitHubToken()` are the smaller helpers behind the above.
+- `setLogger(logger)` routes the library's log output to your own logger.
+
+All exported functions and types have JSDoc comments; see `dist/lib/index.d.ts` for the full surface.
 
 #### Examples
 
+```ts
+import { publishFormula } from 'brewpub'
+
+const result = await publishFormula({
+  cwd: '.',
+  path: 'Formula/custom',
+  tap: 'kitschpatrol/tap',
+})
+
+console.log(`${result.action} ${result.formula.path}`)
+```
+
+Render a formula without touching GitHub:
+
+```ts
+import { getPackageRelease, renderFormula } from 'brewpub'
+
+const release = await getPackageRelease('mdat', '3.2.1')
+
+const formula = renderFormula({
+  binName: release.binNames[0]!,
+  description: 'Markdown autophagic template',
+  formulaName: 'mdat',
+  homepage: release.homepage!,
+  license: release.license,
+  sha256: release.sha256,
+  url: release.tarballUrl,
+})
+```
+
 ### CLI
+
+The common case is a single command in your release script, after publishing:
+
+```sh
+pnpm publish && brewpub --tap kitschpatrol/tap
+```
+
+Every option can also be set as an environment variable prefixed with `BREWPUB_`, so a CI job can set `BREWPUB_TAP` and `BREWPUB_TOKEN` once and run a bare `brewpub`.
+
+Preview the formula without writing anything:
+
+```sh
+brewpub --tap kitschpatrol/tap --dry-run
+```
+
+Open a pull request instead of committing to the default branch, and put new formulae in a subdirectory:
+
+```sh
+brewpub --tap kitschpatrol/tap --pr --path Formula/custom
+```
+
+Existing formulae are found anywhere under the tap's `Formula` directory and updated in place, so `--path` only affects where new formulae go.
 
 <!-- cli-help -->
 
 #### Command: `brewpub`
 
-Run a brewpub command.
-
-This section lists top-level commands for `brewpub`.
-
-If no command is provided, `brewpub do-something` is run by default.
+Create or update a Homebrew formula for a published npm package in a GitHub-hosted tap. Run it after `npm publish`.
 
 Usage:
 
 ```txt
-brewpub [command]
+brewpub [package]
 ```
 
-| Command             | Description                                        |
-| ------------------- | -------------------------------------------------- |
-| `do-something`      | Run the do-something command. _(Default command.)_ |
-| `do-something-else` | Run the do-something-else command.                 |
+| Positional Argument | Description                                                                              | Type     |
+| ------------------- | ---------------------------------------------------------------------------------------- | -------- |
+| `package`           | Directory of the npm package to publish as a formula. Defaults to the current directory. | `string` |
 
-_See the sections below for more information on each subcommand._
-
-#### Subcommand: `brewpub do-something`
-
-Run the do-something command.
-
-Usage:
-
-```txt
-brewpub do-something
-```
-
-| Option              | Description              | Type      | Default |
-| ------------------- | ------------------------ | --------- | ------- |
-| `--verbose`         | Run with verbose logging | `boolean` | `false` |
-| `--help`<br>`-h`    | Show help                | `boolean` |         |
-| `--version`<br>`-v` | Show version number      | `boolean` |         |
-
-#### Subcommand: `brewpub do-something-else`
-
-Run the do-something-else command.
-
-Usage:
-
-```txt
-brewpub do-something-else
-```
-
-| Option              | Description              | Type      | Default |
-| ------------------- | ------------------------ | --------- | ------- |
-| `--verbose`         | Run with verbose logging | `boolean` | `false` |
-| `--help`<br>`-h`    | Show help                | `boolean` |         |
-| `--version`<br>`-v` | Show version number      | `boolean` |         |
+| Option              | Description                                                                                                                                                      | Type      | Default                        |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ------------------------------ |
+| `--verbose`         | Enable verbose logging.                                                                                                                                          | `boolean` | `false`                        |
+| `--tap`             | GitHub repository of the Homebrew tap, as "owner/name" or "owner/homebrew-name". For example, "kitschpatrol/tap".                                                | `string`  |                                |
+| `--path`            | Directory inside the tap where new formulae are written, for example "Formula/custom". Existing formulae are updated wherever they already live under "Formula". | `string`  | `"Formula"`                    |
+| `--name`            | Formula name. Defaults to the package name without its scope.                                                                                                    | `string`  |                                |
+| `--description`     | Formula description. Defaults to the package description, adjusted to satisfy `brew audit`.                                                                      | `string`  |                                |
+| `--token`           | GitHub token with write access to the tap. Defaults to BREWPUB\_TOKEN, then GITHUB\_TOKEN, then `gh auth token`.                                                 | `string`  |                                |
+| `--pr`              | Open a pull request instead of committing directly to the base branch.                                                                                           | `boolean` | `false`                        |
+| `--branch`          | Base branch in the tap. Defaults to the repository's default branch.                                                                                             | `string`  |                                |
+| `--force`           | Allow downgrading to an older version, and reuse an existing pull request branch.                                                                                | `boolean` | `false`                        |
+| `--dry-run`         | Resolve the package and print the formula without writing to the tap. Registry and tap reads still happen.                                                       | `boolean` | `false`                        |
+| `--json`            | Print the result as JSON on stdout.                                                                                                                              | `boolean` | `false`                        |
+| `--registry`        | npm registry to resolve the package from.                                                                                                                        | `string`  | `"https://registry.npmjs.org"` |
+| `--timeout`         | Seconds to wait for the registry to serve the published version.                                                                                                 | `number`  | `300`                          |
+| `--help`<br>`-h`    | Show help                                                                                                                                                        | `boolean` |                                |
+| `--version`<br>`-v` | Show version number                                                                                                                                              | `boolean` |                                |
 
 <!-- /cli-help -->
 
-#### Commands
-
 #### Examples
 
-### Benchmarks
+Get a machine-readable result for further automation:
 
-Run `pnpm bench` to measure the example in `test/index.bench.ts`. Run
-`pnpm bench:baseline` to save or replace `test/benchmarks/baseline.json`;
-subsequent `pnpm bench` runs compare against it without overwriting it.
-Use a separate result file for each benchmark you add, and generate baselines
-in a consistent environment. Vitest 4 benchmark JSON files must be regenerated
-with Vitest 5.
+```sh
+brewpub --tap kitschpatrol/tap --json | jq .commit.url
+```
+
+Use it in a GitHub Actions release workflow. The default `GITHUB_TOKEN` can't write to a different repository, so store a personal access token with `contents` write permission on the tap as a secret:
+
+```yaml
+- run: pnpm publish
+  env:
+    NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+- run: npx brewpub --tap kitschpatrol/tap
+  env:
+    BREWPUB_TOKEN: ${{ secrets.TAP_TOKEN }}
+```
 
 ## Background
 
 ### Motivation
 
+Publishing a CLI to npm is one command. Making it installable with `brew install` means maintaining a second repository and, for every release, computing a hash and editing a Ruby file. Homebrew's maintainers have [declined](https://github.com/Homebrew/brew/issues/14198) to add a `brew publish` step, so brewpub provides the missing half of the workflow for npm packages.
+
 ### Implementation notes
+
+**Registry timing.** `npm publish` returns once the registry accepts the upload, but the package metadata can take a little while to become readable, and the registry only publishes SHA-1 and SHA-512 checksums while Homebrew wants SHA-256. Brewpub asks the registry for the exact version immediately, retries with backoff if it isn't there yet (up to `--timeout`, five minutes by default), downloads the tarball from the URL the registry reports, checks it against the registry's SHA-512 integrity value, and only then computes the SHA-256. Since Homebrew downloads the same URL, the hash in the formula always matches.
+
+**Surgical updates.** When a formula already exists, only its top-level `url` and `sha256` lines change. Everything else, including `bottle` blocks added by `brew pr-pull`, `livecheck` blocks, extra dependencies, and hand-written tests, is left alone. This mirrors what `brew bump-formula-pr` does.
+
+**Livecheck for free.** Homebrew's built-in npm livecheck strategy recognizes registry tarball URLs, so formulae created by brewpub work with `brew livecheck` and `brew bump` without a `livecheck` block.
+
+**Description rules.** Homebrew's `brew audit` rejects descriptions that start with an article or the formula name, end with a period, spell "command-line" differently, contain emoji, or exceed 80 characters. Brewpub fixes the first few automatically and warns about length, which `--description` can override.
+
+**Dependency cooldown.** When Homebrew builds a Node formula it installs dependencies with npm's `--min-release-age=1`, so a build can fail if any dependency was published in the last 24 hours. This is a Homebrew policy, not something brewpub can work around, but it's worth knowing if a tap CI run fails right after a release.
+
+**Tokens.** A token passed on the command line is visible to other processes and in shell history, so prefer the environment variables when running locally. CI runners mask secrets either way.
 
 ### Similar projects
 
+- [`brew bump-formula-pr`](https://docs.brew.sh/Manpage#bump-formula-pr-options-formula) updates an existing formula's version and hash and opens a PR, but requires Homebrew and a local tap checkout, and can't create formulae.
+- [dawidd6/action-homebrew-bump-formula](https://github.com/dawidd6/action-homebrew-bump-formula) wraps `brew bump-formula-pr` for GitHub Actions.
+- [aicw-io/homebrew-tap](https://github.com/aicw-io/homebrew-tap) is an example of a tap that mirrors npm packages by hand.
+
 ## The future
+
+- Templates for other ecosystems, such as PyPI or Rust, if there's demand. The formula renderer is isolated so a second one can slot in.
+- Publishing a package that isn't in the current directory, for mirroring third-party CLIs.
 
 ## Maintainers
 
-_List maintainer(s) for a repository, along with one way of contacting them (e.g. GitHub link or email)._
+[@kitschpatrol](https://github.com/kitschpatrol)
 
 ## Acknowledgments
 
-_State anyone or anything that significantly helped with the development of your project. State public contact hyper-links if applicable._
+The generated formula follows the template produced by `brew create --node`, and the description normalization follows the rules in Homebrew's `desc` audit.
 
 <!-- contributing -->
 
@@ -135,11 +230,3 @@ Please open an issue to discuss changes before submitting a pull request. Unsoli
 This repository uses [@kitschpatrol/shared-config](https://github.com/kitschpatrol/shared-config) (via its `ksc` CLI) for linting and formatting, plus [MDAT](https://github.com/kitschpatrol/mdat) for readme placeholder expansion.
 
 <!-- /contributing -->
-
-<!-- license -->
-
-## License
-
-[MIT](license.txt) © [Eric Mika](https://ericmika.com)
-
-<!-- /license -->

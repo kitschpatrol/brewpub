@@ -10,6 +10,7 @@ publicHoistPattern:
   - '*remark*'
   - '*stylelint*'
 allowBuilds:
+  msw: false
   oxc-resolver: true
   unrs-resolver: true
 minimumReleaseAgeExclude:

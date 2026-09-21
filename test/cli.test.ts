@@ -1,44 +1,98 @@
+/* eslint-disable ts/naming-convention -- Environment variable names. */
+
 import { execFile } from 'node:child_process'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 const cliPath = path.resolve(import.meta.dirname, '../dist/bin/cli.js')
+const noPackageDirectory = path.resolve(import.meta.dirname, 'fixtures/projects/no-package')
+const SEMVER = /\d+\.\d+\.\d+/v
 
-async function run(...args: string[]): Promise<{ code: number; stderr: string; stdout: string }> {
+type RunResult = { code: number; stderr: string; stdout: string }
+
+/** Environment without any brewpub or GitHub settings from the host. */
+const cleanEnv = Object.fromEntries(
+	Object.entries(process.env).filter(
+		([key]) => key !== 'GITHUB_TOKEN' && !key.startsWith('BREWPUB_'),
+	),
+)
+
+async function run(
+	args: string[],
+	options: { cwd?: string; env?: Record<string, string> } = {},
+): Promise<RunResult> {
 	return new Promise((resolve, reject) => {
-		execFile('node', [cliPath, ...args], (error, stdout, stderr) => {
-			if (error && error.code === undefined) {
-				reject(new Error(error.message))
-				return
-			}
+		execFile(
+			'node',
+			[cliPath, ...args],
+			{ cwd: options.cwd ?? noPackageDirectory, env: { ...cleanEnv, ...options.env } },
+			(error, stdout, stderr) => {
+				if (error && typeof error.code !== 'number') {
+					reject(error instanceof Error ? error : new Error('Failed to run the CLI'))
+					return
+				}
 
-			resolve({ code: typeof error?.code === 'number' ? error.code : 0, stderr, stdout })
-		})
+				resolve({ code: typeof error?.code === 'number' ? error.code : 0, stderr, stdout })
+			},
+		)
 	})
 }
 
-const VERSION_REGEX = /\d+\.\d+\.\d+/v
-
 describe('cli', () => {
-	it('should print version with --version', async () => {
-		const { code, stdout } = await run('--version')
+	it('prints the version', async () => {
+		const { code, stdout } = await run(['--version'])
 		expect(code).toBe(0)
-		expect(stdout.trim()).toMatch(VERSION_REGEX)
+		expect(stdout).toMatch(SEMVER)
 	})
 
-	it('should print help with --help', async () => {
-		const { code, stdout } = await run('--help')
+	it('prints help listing every option', async () => {
+		const { code, stdout } = await run(['--help'])
 		expect(code).toBe(0)
-		expect(stdout).toContain('--help')
+		for (const option of [
+			'--tap',
+			'--path',
+			'--name',
+			'--description',
+			'--token',
+			'--pr',
+			'--branch',
+			'--force',
+			'--dry-run',
+			'--json',
+			'--registry',
+			'--timeout',
+			'--verbose',
+		]) {
+			expect(stdout).toContain(option)
+		}
 	})
 
-	it.each([
-		[[], 'Something happened'],
-		[['do-something'], 'Something happened'],
-		[['do-something-else'], 'Something else happened'],
-	])('should run command %j', async (args, expected) => {
-		const { code, stdout } = await run(...args)
-		expect(code).toBe(0)
-		expect(stdout.trim()).toBe(expected)
+	it('requires a tap', async () => {
+		const { code, stderr } = await run([])
+		expect(code).toBe(1)
+		expect(stderr).toContain('Missing required argument: tap')
+	})
+
+	it('rejects unknown options', async () => {
+		const { code, stderr } = await run(['--tap', 'example/tap', '--bogus'])
+		expect(code).toBe(1)
+		expect(stderr).toContain('Unknown argument: bogus')
+	})
+
+	it('fails clearly outside an npm package', async () => {
+		const { code, stderr } = await run(['--tap', 'example/tap', '--dry-run'], {
+			env: { GITHUB_TOKEN: 'x' },
+		})
+		expect(code).toBe(1)
+		expect(stderr).toContain('No package.json found')
+	})
+
+	it('reads the tap from the environment', async () => {
+		const { code, stderr } = await run(['--dry-run'], {
+			env: { BREWPUB_TAP: 'example/tap', GITHUB_TOKEN: 'x' },
+		})
+		expect(code).toBe(1)
+		expect(stderr).not.toContain('Missing required argument')
+		expect(stderr).toContain('No package.json found')
 	})
 })
