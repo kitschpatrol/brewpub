@@ -22,7 +22,7 @@
 
 Brewpub simplifies publishing CLI package formula into your [Homebrew](https://brew.sh) tap.
 
-The current implementation is focused on mirroring NPM packages with `bin` fields to Homebrew, and requires your custom tap repository to be hosted on GitHub. Future versions might expand support to additional project types and git situations.
+The current implementation is focused on mirroring npm packages with `bin` fields to Homebrew, and requires your custom tap repository to be hosted on GitHub. Future versions might expand support to additional project types and git situations.
 
 You can integrate it in your CI release workflow, or just run it right after `npm publish` from your project directory and it will:
 
@@ -108,7 +108,7 @@ brewpub
 | `--dry-run`         | Resolve the package and print the formula without writing to the tap. Registry and tap reads still happen.                                                       | `boolean` | `false`                        |
 | `--json`            | Print the result as JSON on stdout.                                                                                                                              | `boolean` | `false`                        |
 | `--registry`        | npm registry to resolve the package from.                                                                                                                        | `string`  | `"https://registry.npmjs.org"` |
-| `--timeout`         | Seconds to wait for the registry to serve the published version.                                                                                                 | `number`  | `300`                          |
+| `--timeout`         | Seconds to wait for the registry to serve the published version.                                                                                                 | `number`  | `600`                          |
 | `--help`<br>`-h`    | Show help                                                                                                                                                        | `boolean` |                                |
 | `--version`<br>`-v` | Show version number                                                                                                                                              | `boolean` |                                |
 
@@ -191,7 +191,7 @@ Publishing a CLI to npm is one command. Making it installable with `brew install
 
 #### Registry timing
 
-`npm publish` returns once the registry accepts the upload, but the package metadata can take a little while to become readable, and the registry only publishes SHA-1 and SHA-512 checksums while Homebrew wants SHA-256. Brewpub asks the registry for the exact version immediately, retries with backoff if it isn't there yet (up to `--timeout`, five minutes by default), downloads the tarball from the URL the registry reports, checks it against the registry's SHA-512 integrity value, and only then computes the SHA-256. Since Homebrew downloads the same URL, the hash in the formula always matches.
+`npm publish` returns once the registry accepts the upload, but the package metadata can take a little while to become readable, and the registry only publishes SHA-1 and SHA-512 checksums while Homebrew wants SHA-256. Brewpub asks the registry for the exact version immediately, retries with backoff if it isn't there yet (up to `--timeout`, ten minutes by default), downloads the tarball from the URL the registry reports, checks it against the registry's SHA-512 integrity value, and only then computes the SHA-256. Since Homebrew downloads the same URL, the hash in the formula always matches.
 
 #### Surgical updates
 

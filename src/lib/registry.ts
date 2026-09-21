@@ -29,7 +29,7 @@ export const DEFAULT_GET_PACKAGE_RELEASE_OPTIONS = {
 	initialDelayMs: 1000,
 	maxDelayMs: 15_000,
 	registryUrl: DEFAULT_REGISTRY_URL,
-	timeoutMs: 300_000,
+	timeoutMs: 600_000,
 } satisfies GetPackageReleaseOptions
 
 /**

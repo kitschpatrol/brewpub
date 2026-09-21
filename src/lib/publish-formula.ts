@@ -93,7 +93,7 @@ export const DEFAULT_PUBLISH_FORMULA_OPTIONS: PublishFormulaDefaults = {
 	path: 'Formula',
 	pr: false,
 	registryUrl: DEFAULT_REGISTRY_URL,
-	timeoutMs: 300_000,
+	timeoutMs: 600_000,
 }
 
 /**
