@@ -1,6 +1,6 @@
 {
 	"name": "brewpub",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"description": "CLI tool to publish and update Homebrew formula to your custom tap. Like npm publish for Homebrew.",
 	"keywords": [
 		"cli",
