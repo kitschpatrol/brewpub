@@ -222,6 +222,7 @@ A token passed on the command line is visible to other processes and in shell hi
 - [`brew bump-formula-pr`](https://docs.brew.sh/Manpage#bump-formula-pr-options-formula) updates an existing formula's version and hash and opens a PR, but requires Homebrew and a local tap checkout, and can't create formulae.
 - [dawidd6/action-homebrew-bump-formula](https://github.com/dawidd6/action-homebrew-bump-formula) wraps `brew bump-formula-pr` for GitHub Actions.
 - [aicw-io/homebrew-tap](https://github.com/aicw-io/homebrew-tap) is an example of a tap that mirrors npm packages by hand.
+- [`@auto-it/brew`](https://www.npmjs.com/package/@auto-it/brew), a plugin for [intuit/auto](https://github.com/intuit/auto), fills a formula template you write yourself with the version and SHA-256 of a prebuilt executable attached to a GitHub release, and commits it as part of auto's release flow. It suits compiled binaries and projects already using auto for releases. Brewpub instead targets the npm tarball, needs no template, updates an existing formula in place, and runs as a single step after any publish tool.
 
 ## The future
 
