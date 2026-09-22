@@ -34,6 +34,14 @@ describe('renderFormula', () => {
 		)
 	})
 
+	it('symlinks only the named bin when binOnly is set', () => {
+		expect(renderFormula(baseInput)).toContain('bin.install_symlink libexec.glob("bin/*")')
+
+		const formula = renderFormula({ ...baseInput, binName: 'fb', binOnly: true })
+		expect(formula).toContain('bin.install_symlink libexec/"bin/fb"')
+		expect(formula).not.toContain('libexec.glob')
+	})
+
 	it('uses the bin name in the test block and the class name from the formula name', () => {
 		const formula = renderFormula({
 			...baseInput,

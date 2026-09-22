@@ -8,6 +8,11 @@ export type RenderFormulaInput = {
 	arch?: 'arm64' | 'x86_64' | undefined
 	/** Name of the executable used by the formula's test block. */
 	binName: string
+	/**
+	 * Symlink only `binName` into Homebrew's `bin`. By default every executable
+	 * the package declares is symlinked.
+	 */
+	binOnly?: boolean | undefined
 	/** Formula description, already normalized for Homebrew's audit rules. */
 	description: string
 	/** Homebrew formula name, e.g. `foo-bar`. */
@@ -61,7 +66,9 @@ export function renderFormula(input: RenderFormulaInput): string {
 		'',
 		'  def install',
 		'    system "npm", "install", *std_npm_args',
-		'    bin.install_symlink libexec.glob("bin/*")',
+		input.binOnly
+			? `    bin.install_symlink libexec/"bin/${escapeRubyString(input.binName)}"`
+			: '    bin.install_symlink libexec.glob("bin/*")',
 		'  end',
 		'',
 		'  test do',

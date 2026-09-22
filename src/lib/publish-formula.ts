@@ -30,6 +30,12 @@ import { DEFAULT_REGISTRY_URL, getPackageRelease } from './registry'
  * Options for {@link publishFormula}.
  */
 export type PublishFormulaOptions = {
+	/**
+	 * The only executable the formula installs and tests. Must be one of the
+	 * package's `bin` entries. By default every entry is installed and the first
+	 * is tested.
+	 */
+	bin?: string | undefined
 	/** Base branch in the tap. Defaults to the repository's default branch. */
 	branch?: string | undefined
 	/**
@@ -137,6 +143,7 @@ type ResolvedOptions = Omit<PublishFormulaOptions, keyof PublishFormulaDefaults>
 type FormulaInputs = {
 	arch: PlatformRequirements['arch']
 	binName: string
+	binOnly: boolean
 	description: string
 	formulaName: string
 	homepage: string
@@ -170,10 +177,16 @@ function getFormulaInputs(
 		)
 	}
 
-	const binName = release.binNames[0]
+	const binName = options.bin ?? release.binNames[0]
 	if (binName === undefined) {
 		throw new Error(
 			`${local.name}@${local.version} has no "bin" entry. Homebrew formulae created by brewpub need a command to install and test.`,
+		)
+	}
+
+	if (!release.binNames.includes(binName)) {
+		throw new Error(
+			`${local.name}@${local.version} has no "bin" entry named "${binName}". Available: ${release.binNames.join(', ')}.`,
 		)
 	}
 
@@ -206,6 +219,7 @@ function getFormulaInputs(
 	return {
 		arch: platform.arch,
 		binName,
+		binOnly: options.bin !== undefined,
 		description: normalized.description,
 		formulaName,
 		homepage,
@@ -244,6 +258,7 @@ async function planFormula(
 		const content = renderFormula({
 			arch: inputs.arch,
 			binName: inputs.binName,
+			binOnly: inputs.binOnly,
 			description: inputs.description,
 			formulaName: inputs.formulaName,
 			homepage: inputs.homepage,

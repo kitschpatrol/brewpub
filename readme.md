@@ -87,6 +87,12 @@ brewpub --tap kitschpatrol/tap --pr --path Formula/custom
 
 Existing formulae are found anywhere under the tap's `Formula` directory and updated in place, so `--path` only affects where new formulae go.
 
+Packages with several `bin` entries get all of them installed, and the first is used in the formula's test block. Pass `--bin` to install and test just one of them:
+
+```sh
+brewpub --tap kitschpatrol/tap --bin tldraw-cli
+```
+
 <!-- cli-help -->
 
 #### Command: `brewpub`
@@ -106,6 +112,7 @@ brewpub
 | `--cwd`             | Directory of the npm package to publish as a formula. Defaults to the current directory.                                                                         | `string`  | `"."`                          |
 | `--path`            | Directory inside the tap where new formulae are written, for example "Formula/custom". Existing formulae are updated wherever they already live under "Formula". | `string`  | `"Formula"`                    |
 | `--name`            | Formula name. Defaults to the package name without its scope.                                                                                                    | `string`  |                                |
+| `--bin`             | The only executable the formula installs and tests, for packages with several "bin" entries. By default all entries are installed and the first is tested.       | `string`  |                                |
 | `--description`     | Formula description. Defaults to the package description, adjusted to satisfy `brew audit`.                                                                      | `string`  |                                |
 | `--token`           | GitHub token with write access to the tap. Defaults to BREWPUB\_TOKEN, then GITHUB\_TOKEN, then `gh auth token`.                                                 | `string`  |                                |
 | `--pr`              | Open a pull request instead of committing directly to the base branch.                                                                                           | `boolean` | `false`                        |

@@ -17,7 +17,8 @@ const NEWER_VERSION = /already has foo-bar 9\.0\.0, which is newer than 1\.2\.3/
 const DUPLICATES = /more than one formula named foo-bar/v
 const BRANCH_EXISTS = /Branch brewpub\/foo-bar-1\.2\.3 already exists/v
 const NO_PACKAGE_JSON = /No package.json found/v
-const NO_BIN = /has no "bin" entry/v
+const NO_BIN = /has no "bin" entry\./v
+const UNKNOWN_BIN = /has no "bin" entry named "missing"\. Available: foo-bar, foo-bar-extra\./v
 const INVALID_NAME = /not a valid formula name/v
 const NO_HOMEPAGE = /no homepage or repository URL/v
 const INVALID_TAP = /Invalid tap/v
@@ -106,6 +107,17 @@ describe('publishFormula', () => {
 		expect(result.formula.className).toBe('FooBarCli')
 		expect(result.formula.content).toContain('class FooBarCli < Formula')
 		expect(result.formula.content).toContain('desc "Custom description"')
+	})
+
+	it('installs and tests only the requested bin entry', async () => {
+		const result = await publishFormula({ ...baseOptions, bin: 'foo-bar-extra' })
+		expect(result.formula.content).toContain('bin.install_symlink libexec/"bin/foo-bar-extra"')
+		expect(result.formula.content).not.toContain('libexec.glob')
+		expect(result.formula.content).toContain('shell_output("#{bin}/foo-bar-extra --version")')
+	})
+
+	it('rejects a bin entry the package does not have', async () => {
+		await expect(publishFormula({ ...baseOptions, bin: 'missing' })).rejects.toThrow(UNKNOWN_BIN)
 	})
 
 	it('updates an existing formula in place wherever it lives', async () => {

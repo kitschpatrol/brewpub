@@ -35,6 +35,14 @@ export const nameOption = {
 	},
 } as const satisfies Record<string, Options>
 
+export const binOption = {
+	bin: {
+		describe:
+			'The only executable the formula installs and tests, for packages with several "bin" entries. By default all entries are installed and the first is tested.',
+		type: 'string',
+	},
+} as const satisfies Record<string, Options>
+
 export const descriptionOption = {
 	description: {
 		describe:

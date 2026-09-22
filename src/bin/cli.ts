@@ -3,9 +3,14 @@
 import { createLogger } from 'lognow'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import { bin, name as packageName, version } from '../../package.json' with { type: 'json' }
+import {
+	bin as packageBin,
+	name as packageName,
+	version,
+} from '../../package.json' with { type: 'json' }
 import { formatPublishFormulaResult, publishFormula, setLogger } from '../lib'
 import {
+	binOption,
 	branchOption,
 	cwdOption,
 	descriptionOption,
@@ -33,7 +38,7 @@ function createCliLogger(isVerbose: boolean) {
 let log = createCliLogger(false)
 setLogger(log)
 
-const cliCommandName = Object.keys(bin).at(0)!
+const cliCommandName = Object.keys(packageBin).at(0)!
 const yargsInstance = yargs(hideBin(process.argv))
 
 try {
@@ -54,6 +59,7 @@ try {
 					.option(cwdOption)
 					.option(pathOption)
 					.option(nameOption)
+					.option(binOption)
 					.option(descriptionOption)
 					.option(tokenOption)
 					.option(prOption)
@@ -64,6 +70,7 @@ try {
 					.option(registryOption)
 					.option(timeoutOption),
 			async ({
+				bin,
 				branch,
 				cwd,
 				description,
@@ -80,6 +87,7 @@ try {
 				verbose,
 			}) => {
 				const result = await publishFormula({
+					bin,
 					branch,
 					cwd,
 					description,
