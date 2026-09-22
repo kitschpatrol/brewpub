@@ -49,10 +49,16 @@ Run it without installing anything:
 pnpx brewpub --tap kitschpatrol/tap
 ```
 
-Or add it to a project so it can run as part of your release script:
+Or add it to a project so it can run as part of your release script or to access the TypeScript API:
 
 ```sh
 pnpm add -D brewpub
+```
+
+Or, since brewpub uses itself to publish itself to Homebrew, you can install it accordingly:
+
+```sh
+brew install kitschpatrol/tap/brewpub
 ```
 
 ## Usage

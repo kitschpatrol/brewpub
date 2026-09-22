@@ -45,7 +45,7 @@
 		"clean-deep": "shx rm -f pnpm-lock.yaml && git clean -fdX -e !.claude/",
 		"fix": "ksc fix",
 		"lint": "ksc lint",
-		"release": "bumpp --commit 'Release: %s' && pnpm build && NPM_TOKEN=$(op read 'op://Personal/npm/token') pnpm publish --otp $(op item get npm --otp)",
+		"release": "bumpp --commit 'Release: %s' && pnpm build && NPM_TOKEN=$(op read 'op://Personal/npm/token') pnpm publish --otp $(op item get npm --otp) && brewpub --tap kitschpatrol/tap",
 		"test": "vitest run"
 	},
 	"dependencies": {
@@ -64,6 +64,7 @@
 		"@arethetypeswrong/core": "^0.18.5",
 		"@kitschpatrol/shared-config": "^8.10.0",
 		"@types/semver": "^7.8.0",
+		"brewpub": "^0.3.0",
 		"bumpp": "^12.3.0",
 		"mdat-plugin-cli-help": "^3.2.0",
 		"msw": "^2.15.0",
