@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { normalizeRepoUrl } from '../src/lib'
+import { normalizeRepositoryUrl } from '../src/lib'
 
-describe('normalizeRepoUrl', () => {
+describe('normalizeRepositoryUrl', () => {
 	it.each([
 		['https://github.com/example/foo', 'https://github.com/example/foo'],
 		['https://github.com/example/foo.git', 'https://github.com/example/foo'],
@@ -19,6 +19,6 @@ describe('normalizeRepoUrl', () => {
 		['ftp://example.com/foo', undefined],
 		['https://github.com', undefined],
 	])('%j → %j', (input, expected) => {
-		expect(normalizeRepoUrl(input)).toBe(expected)
+		expect(normalizeRepositoryUrl(input)).toBe(expected)
 	})
 })

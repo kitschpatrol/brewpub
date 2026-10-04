@@ -26,7 +26,7 @@ end
 /**
  * A previously published formula that has been through `brew pr-pull`, so it
  * carries a bottle block, plus a livecheck block and a customized test. Only
- * the top-level url and sha256 should ever change.
+ * the top-level desc, url, and sha256 should ever change.
  */
 export const fooBarFormulaWithBottle = `class FooBar < Formula
   desc "Command-line tool for doing things"

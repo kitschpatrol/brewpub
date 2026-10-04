@@ -144,6 +144,20 @@ describe('publishFormula', () => {
 		expect(fakeTap.commits).toEqual([])
 	})
 
+	it('updates the desc of an otherwise current formula', async () => {
+		resetFakeTap({
+			'Formula/foo-bar.rb': fooBarFormulaWithBottleCurrent.replace(
+				'desc "Command-line tool for doing things"',
+				'desc "Old description"',
+			),
+		})
+
+		const result = await publishFormula(baseOptions)
+
+		expect(result.action).toBe('updated')
+		expect(result.formula.content).toBe(fooBarFormulaWithBottleCurrent)
+	})
+
 	it('refuses to downgrade unless forced', async () => {
 		resetFakeTap({ 'Formula/foo-bar.rb': fooBarFormulaNewer })
 

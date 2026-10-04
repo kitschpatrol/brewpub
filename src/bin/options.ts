@@ -46,7 +46,7 @@ export const binOption = {
 export const descriptionOption = {
 	description: {
 		describe:
-			'Formula description. Defaults to the package description, adjusted to satisfy `brew audit`.',
+			'Formula description, written on every create and update. Defaults to the package description, adjusted to satisfy `brew audit`.',
 		type: 'string',
 	},
 } as const satisfies Record<string, Options>

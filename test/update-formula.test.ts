@@ -8,13 +8,18 @@ const SHA256_LINE = /^ {2}sha256 .*\n/mv
 const URL_AND_SHA256_LINES = /^ {2}url .*\n {2}sha256 .*\n/mv
 const MISSING_URL = /top-level `url` stanza/v
 const MISSING_SHA256 = /top-level `sha256` stanza/v
+const MISSING_DESC = /top-level `desc` stanza/v
+const DESC_LINE = /^ {2}desc .*\n/mv
+
+const current = {
+	description: 'Command-line tool for doing things',
+	sha256: fooBar.sha256,
+	url: fooBar.tarballUrl,
+}
 
 describe('updateFormula', () => {
-	it('changes only the top-level url and sha256 lines', () => {
-		const result = updateFormula(fooBarFormulaWithBottle, {
-			sha256: fooBar.sha256,
-			url: fooBar.tarballUrl,
-		})
+	it('changes only the top-level url and sha256 lines when the desc is current', () => {
+		const result = updateFormula(fooBarFormulaWithBottle, current)
 
 		expect(result.isChanged).toBe(true)
 		expect(result.previousUrl).toBe('https://registry.npmjs.org/foo-bar/-/foo-bar-1.2.2.tgz')
@@ -33,10 +38,7 @@ describe('updateFormula', () => {
 	})
 
 	it('reports no change when the formula is already current', () => {
-		const result = updateFormula(fooBarFormulaWithBottleCurrent, {
-			sha256: fooBar.sha256,
-			url: fooBar.tarballUrl,
-		})
+		const result = updateFormula(fooBarFormulaWithBottleCurrent, current)
 		expect(result.isChanged).toBe(false)
 		expect(result.content).toBe(fooBarFormulaWithBottleCurrent)
 	})
@@ -46,29 +48,51 @@ describe('updateFormula', () => {
 			'foo-bar-1.2.2.tgz"',
 			'foo-bar-1.2.2.tgz", using: :nounzip',
 		)
-		const result = updateFormula(formula, { sha256: fooBar.sha256, url: fooBar.tarballUrl })
+		const result = updateFormula(formula, current)
 		expect(result.content).toContain(`  url "${fooBar.tarballUrl}", using: :nounzip`)
+	})
+
+	it('replaces a changed desc, escaping it for Ruby', () => {
+		const result = updateFormula(fooBarFormulaWithBottleCurrent, {
+			...current,
+			description: 'Turn "#{comments}" into content',
+		})
+		expect(result.isChanged).toBe(true)
+		expect(result.content).toBe(
+			fooBarFormulaWithBottleCurrent.replace(
+				'desc "Command-line tool for doing things"',
+				String.raw`desc "Turn \"\#{comments}\" into content"`,
+			),
+		)
+	})
+
+	it('treats an escaped desc that matches as current', () => {
+		const description = 'Say "hi"'
+		const formula = fooBarFormulaWithBottleCurrent.replace(
+			'desc "Command-line tool for doing things"',
+			String.raw`desc "Say \"hi\""`,
+		)
+		expect(updateFormula(formula, { ...current, description }).isChanged).toBe(false)
+	})
+
+	it('throws when the desc stanza is missing', () => {
+		const formula = fooBarFormulaWithBottle.replace(DESC_LINE, '')
+		expect(() => updateFormula(formula, current)).toThrow(MISSING_DESC)
 	})
 
 	it('throws when the url stanza is missing', () => {
 		const formula = fooBarFormulaWithBottle.replace(URL_LINE, '')
-		expect(() => updateFormula(formula, { sha256: fooBar.sha256, url: fooBar.tarballUrl })).toThrow(
-			MISSING_URL,
-		)
+		expect(() => updateFormula(formula, current)).toThrow(MISSING_URL)
 	})
 
 	it('throws when the sha256 stanza is missing', () => {
 		const formula = fooBarFormulaWithBottle.replace(SHA256_LINE, '')
-		expect(() => updateFormula(formula, { sha256: fooBar.sha256, url: fooBar.tarballUrl })).toThrow(
-			MISSING_SHA256,
-		)
+		expect(() => updateFormula(formula, current)).toThrow(MISSING_SHA256)
 	})
 
 	it('ignores indented url and sha256 lines inside blocks', () => {
 		const formula = fooBarFormulaWithBottle.replace(URL_AND_SHA256_LINES, '')
-		expect(() =>
-			updateFormula(formula, { sha256: fooBar.sha256, url: fooBar.tarballUrl }),
-		).toThrow()
+		expect(() => updateFormula(formula, current)).toThrow()
 	})
 })
 

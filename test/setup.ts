@@ -3,7 +3,7 @@ import { server } from './mocks/server'
 
 beforeAll(() => {
 	server.listen({
-		onUnhandledRequest: process.env.BREWPUB_TEST_MOCK === 'false' ? 'bypass' : 'error',
+		onUnhandledFrame: process.env.BREWPUB_TEST_MOCK === 'false' ? 'bypass' : 'error',
 	})
 })
 

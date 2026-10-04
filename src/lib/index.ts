@@ -29,4 +29,4 @@ export {
 	DEFAULT_REGISTRY_URL,
 	getPackageRelease,
 } from './registry'
-export { normalizeRepoUrl } from './utilities/repo-url'
+export { normalizeRepositoryUrl } from './utilities/repository-url'

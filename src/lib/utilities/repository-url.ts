@@ -19,7 +19,7 @@ const SHORTHAND_HOSTS: Record<string, string> = {
  * `ssh://git@host/o/r`, `git://host/o/r`, `github:o/r` shorthand, and trailing
  * `.git`. Returns `undefined` when the value can't be parsed.
  */
-export function normalizeRepoUrl(url: string): string | undefined {
+export function normalizeRepositoryUrl(url: string): string | undefined {
 	let candidate = url.trim().replace(GIT_PREFIX, '')
 
 	const shorthand = SHORTHAND.exec(candidate)?.groups

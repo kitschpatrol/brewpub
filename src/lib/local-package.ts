@@ -1,6 +1,6 @@
 import { defineTemplate, getMetadata, helpers } from 'metascope'
 import path from 'node:path'
-import { normalizeRepoUrl } from './utilities/repo-url'
+import { normalizeRepositoryUrl } from './utilities/repository-url'
 
 /**
  * The parts of a local npm package that brewpub needs before consulting the
@@ -67,15 +67,18 @@ export async function getLocalPackageInfo(
 		throw new Error(`The package.json in ${absolutePath} needs both a "name" and a "version".`)
 	}
 
-	const repoCandidate = repository?.url ?? gitOriginUrl
-	const repoUrl = typeof repoCandidate === 'string' ? normalizeRepoUrl(repoCandidate) : undefined
+	const repositoryCandidate = repository?.url ?? gitOriginUrl
+	const repositoryUrl =
+		typeof repositoryCandidate === 'string'
+			? normalizeRepositoryUrl(repositoryCandidate)
+			: undefined
 
 	return {
 		cpu: getStringArray(cpu),
 		homepage: typeof homepage === 'string' && homepage !== '' ? homepage : undefined,
 		name,
 		os: getStringArray(os),
-		repoUrl,
+		repoUrl: repositoryUrl,
 		version,
 	}
 }

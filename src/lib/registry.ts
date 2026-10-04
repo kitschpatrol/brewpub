@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { setTimeout as sleep } from 'node:timers/promises'
 import { getFormulaName } from './formula/name'
 import { log } from './log'
-import { normalizeRepoUrl } from './utilities/repo-url'
+import { normalizeRepositoryUrl } from './utilities/repository-url'
 
 /** The public npm registry. */
 export const DEFAULT_REGISTRY_URL = 'https://registry.npmjs.org'
@@ -90,10 +90,10 @@ function getLicense(value: unknown): string | undefined {
 	return isRecord(value) ? getString(value, 'type') : undefined
 }
 
-function getRepoUrl(value: unknown): string | undefined {
+function getRepositoryUrl(value: unknown): string | undefined {
 	const raw =
 		typeof value === 'string' ? value : isRecord(value) ? getString(value, 'url') : undefined
-	return raw === undefined ? undefined : normalizeRepoUrl(raw)
+	return raw === undefined ? undefined : normalizeRepositoryUrl(raw)
 }
 
 function getBinNames(value: unknown, packageName: string): string[] {
@@ -134,7 +134,7 @@ function parseManifest(data: unknown, name: string, version: string): RegistryMa
 		integrity: getString(dist, 'integrity'),
 		license: getLicense(data.license),
 		name,
-		repoUrl: getRepoUrl(data.repository),
+		repoUrl: getRepositoryUrl(data.repository),
 		shasum: getString(dist, 'shasum'),
 		tarballUrl,
 		version,

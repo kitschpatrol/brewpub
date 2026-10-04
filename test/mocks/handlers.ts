@@ -18,8 +18,8 @@ function notFound() {
 	return HttpResponse.json({ message: 'Not Found' }, { status: 404 })
 }
 
-function isFakeTap(owner: string, repo: string): boolean {
-	return owner === fakeTap.owner && repo === fakeTap.repo
+function isFakeTap(owner: string, repository: string): boolean {
+	return owner === fakeTap.owner && repository === fakeTap.repo
 }
 
 function getRefBranch(ref: string): string | undefined {

@@ -277,6 +277,7 @@ async function planFormula(
 	}
 
 	const update = updateFormula(existing.content, {
+		description: inputs.description,
 		sha256: release.sha256,
 		url: release.tarballUrl,
 	})
@@ -359,7 +360,8 @@ async function openPullRequest(
 /**
  * Publish the npm package in `cwd` as a Homebrew formula in a GitHub-hosted
  * tap. Creates the formula if it doesn't exist, otherwise updates only its
- * `url` and `sha256`. Commits directly to the base branch unless `pr` is set.
+ * `desc`, `url`, and `sha256`. Commits directly to the base branch unless `pr`
+ * is set.
  */
 export async function publishFormula(
 	options: PublishFormulaOptions,

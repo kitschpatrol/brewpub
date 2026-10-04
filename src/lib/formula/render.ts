@@ -40,7 +40,7 @@ function escapeRubyString(text: string): string {
 /**
  * Render text as a Ruby double-quoted string literal, including the quotes.
  */
-function toRubyString(text: string): string {
+export function toRubyString(text: string): string {
 	return `"${escapeRubyString(text)}"`
 }
 
