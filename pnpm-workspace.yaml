@@ -1,7 +1,30 @@
+allowBuilds:
+  unrs-resolver: true
+minimumReleaseAgeExclude:
+  - '@kitschpatrol/cspell-config@8.13.1'
+  - '@kitschpatrol/eslint-config@8.13.1'
+  - '@kitschpatrol/knip-config@8.13.1'
+  - '@kitschpatrol/mdat-config@8.13.1'
+  - '@kitschpatrol/prettier-config@8.13.1'
+  - '@kitschpatrol/remark-config@8.13.1'
+  - '@kitschpatrol/repo-config@8.13.1'
+  - '@kitschpatrol/shared-config@8.13.1'
+  - '@kitschpatrol/stylelint-config@8.13.1'
+  - '@kitschpatrol/typescript-config@8.13.1'
+  - lognow@0.8.5
+  - mdat-plugin-cli-help@3.4.1
+  - mdat@3.6.2
+  - metascope@0.12.2
+  - read-pyproject@0.4.1
+peerDependencyRules:
+  allowedVersions:
+    # Remove once the installed version declares ESLint 10 support.
+    # https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/issues/1075
+    # https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/pull/1081
+    eslint-plugin-jsx-a11y@6>eslint: ^10.0.0
 publicHoistPattern:
   - '@kitschpatrol/repo-config'
   - '@kitschpatrol/typescript-config'
-  - 'case-police'
   - '*cspell*'
   - '*eslint*'
   - '*knip*'
@@ -9,22 +32,4 @@ publicHoistPattern:
   - '*prettier*'
   - '*remark*'
   - '*stylelint*'
-allowBuilds:
-  msw: false
-  oxc-resolver: true
-  unrs-resolver: true
-minimumReleaseAgeExclude:
-  - '@kitschpatrol/cspell-config@8.11.0'
-  - '@kitschpatrol/eslint-config@8.11.0'
-  - '@kitschpatrol/knip-config@8.11.0'
-  - '@kitschpatrol/mdat-config@8.11.0'
-  - '@kitschpatrol/prettier-config@8.11.0'
-  - '@kitschpatrol/remark-config@8.11.0'
-  - '@kitschpatrol/repo-config@8.11.0'
-  - '@kitschpatrol/shared-config@8.11.0'
-  - '@kitschpatrol/stylelint-config@8.11.0'
-  - '@kitschpatrol/typescript-config@8.11.0'
-  - '@pnpm/lockfile.fs@1100.2.12'
-  - eslint-plugin-jsdoc@65.1.0
-  - mdat-plugin-cli-help@3.4.0
-  - mdat@3.6.1
+  - 'case-police'

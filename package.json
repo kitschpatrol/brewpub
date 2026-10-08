@@ -6,6 +6,7 @@
 		"cli",
 		"homebrew",
 		"homebrew-tap",
+		"homebrew-formula",
 		"formula",
 		"npm",
 		"publish",
@@ -45,6 +46,7 @@
 		"clean-deep": "shx rm -f pnpm-lock.yaml && git clean -fdX -e !.claude/",
 		"fix": "ksc fix",
 		"lint": "ksc lint",
+		"prepare": "skills experimental_sync -y -f",
 		"release": "bumpp --commit 'Release: %s' && pnpm build && NPM_TOKEN=$(op read 'op://Personal/npm/token') pnpm publish --otp $(op item get npm --otp) && brewpub --tap kitschpatrol/tap",
 		"test": "vitest run"
 	},
@@ -54,27 +56,28 @@
 		"@types/node": "~24.13.6",
 		"@types/yargs": "^17.0.35",
 		"defu": "^6.1.7",
-		"lognow": "^0.8.4",
-		"metascope": "^0.12.1",
+		"lognow": "^0.8.5",
+		"metascope": "^0.12.2",
 		"semver": "^7.8.5",
 		"uint8array-extras": "^1.6.0",
 		"yargs": "^18.2.0"
 	},
 	"devDependencies": {
 		"@arethetypeswrong/core": "^0.18.5",
-		"@kitschpatrol/shared-config": "^8.11.0",
+		"@kitschpatrol/shared-config": "^8.13.1",
 		"@types/semver": "^7.8.0",
-		"brewpub": "^0.4.0",
+		"brewpub": "^0.5.0",
 		"bumpp": "^12.3.0",
-		"mdat-plugin-cli-help": "^3.4.0",
+		"mdat-plugin-cli-help": "^3.4.1",
 		"msw": "^3.0.2",
 		"publint": "^0.3.25",
 		"shx": "^0.4.0",
+		"skills": "^1.7.1",
 		"tsdown": "^0.23.0",
 		"typescript": "~6.0.3",
 		"vitest": "^5.0.3"
 	},
-	"packageManager": "pnpm@12.7.0",
+	"packageManager": "pnpm@12.9.1",
 	"engines": {
 		"node": "^24.16.0 || >=26.3.0"
 	}
