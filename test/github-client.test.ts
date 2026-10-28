@@ -9,9 +9,8 @@ vi.mock('node:child_process', async (importOriginal) => ({
 	execFile: execFileMock,
 }))
 
-type ExecFileCallback = (error: Error | undefined, result: { stdout: string }) => void
-
 function mockGhAuthToken(stdout: Error | string): void {
+	type ExecFileCallback = (error: Error | undefined, result: { stdout: string }) => void
 	execFileMock.mockImplementation((_file: string, _args: string[], callback: ExecFileCallback) => {
 		if (stdout instanceof Error) {
 			callback(stdout, { stdout: '' })

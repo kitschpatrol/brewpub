@@ -27,10 +27,6 @@ function getRefBranch(ref: string): string | undefined {
 	return fakeTap.branches.has(branch) ? branch : undefined
 }
 
-type PutContentsBody = { branch?: string; content: string; message: string; sha?: string }
-type PostRefBody = { ref: string; sha: string }
-type PostPullBody = { base: string; body?: string; head: string; title: string }
-
 let nextCommitNumber = 1
 
 export const handlers = [
@@ -132,6 +128,7 @@ export const handlers = [
 	}),
 
 	http.put('https://api.github.com/repos/:owner/:repo/contents/*', async ({ params, request }) => {
+		type PutContentsBody = { branch?: string; content: string; message: string; sha?: string }
 		if (!shouldMock()) {
 			return passthrough()
 		}
@@ -185,6 +182,7 @@ export const handlers = [
 	}),
 
 	http.post('https://api.github.com/repos/:owner/:repo/git/refs', async ({ params, request }) => {
+		type PostRefBody = { ref: string; sha: string }
 		if (!shouldMock()) {
 			return passthrough()
 		}
@@ -232,6 +230,7 @@ export const handlers = [
 	}),
 
 	http.post('https://api.github.com/repos/:owner/:repo/pulls', async ({ params, request }) => {
+		type PostPullBody = { base: string; body?: string; head: string; title: string }
 		if (!shouldMock()) {
 			return passthrough()
 		}
