@@ -261,7 +261,7 @@ A token passed on the command line is visible to other processes and in shell hi
 
 ## The future
 
-- Templates for other ecosystems, such as PyPI or Rust. The formula renderer is isolated so a second one can slot in.
+- Templates for other ecosystems, such as PyPI or Cargo. The formula renderer is isolated so a second one can slot in.
 - Publishing a package that isn't in the current directory, for mirroring third-party CLIs.
 
 ## Maintainers
